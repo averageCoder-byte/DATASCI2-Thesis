@@ -9,3 +9,6 @@ __pycache__/
 src/airflow/logs/
 src/airflow/.airflow/
 src/airflow/config/airflow.cfg
+
+
+src/modeling/data/sequences/*.npy
