@@ -12,3 +12,7 @@ src/airflow/config/airflow.cfg
 
 
 src/modeling/data/sequences/*.npy
+
+src/modeling/data/gmm_results/*.joblib
+src/modeling/data/gmm_results/*.csv
+src/modeling/data/test_results/*.npy
