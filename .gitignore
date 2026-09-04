@@ -10,6 +10,9 @@ src/airflow/logs/
 src/airflow/.airflow/
 src/airflow/config/airflow.cfg
 
+# Trained model artifacts
+*.joblib
+*.keras
 
 src/modeling/data/sequences/*.npy
 

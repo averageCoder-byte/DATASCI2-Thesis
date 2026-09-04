@@ -1,0 +1,2 @@
+threshold,validation_balanced_accuracy,test_sequences,tn,fp,fn,tp,precision,recall,f1,balanced_accuracy,roc_auc,pr_auc,predicted_anomalous,predicted_anomalous_pct,proxy_anomalous,proxy_anomalous_pct
+0.9288811,0.8811099602200365,21858,3378,250,3911,14319,0.9828402773011188,0.7854635216675809,0.8731363761090277,0.8582775160708357,0.934338117137326,0.9866282427853359,14569,66.652941714704,18230,83.40195809314667
