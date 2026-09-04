@@ -4,6 +4,7 @@ from .encoder import LSTMEncoder
 from .decoder import LSTMDecoder
 
 
+@tf.keras.utils.register_keras_serializable()
 class LSTMAutoencoder(tf.keras.Model):
     def __init__(
         self,
@@ -12,8 +13,15 @@ class LSTMAutoencoder(tf.keras.Model):
         dropout: float = 0.10,
         sequence_length: int = 60,
         feature_count: int = 7,
+        **kwargs,
     ):
-        super().__init__()
+        super().__init__(**kwargs)
+
+        self.hidden_units = hidden_units
+        self.latent_dim = latent_dim
+        self.dropout_rate = dropout
+        self.sequence_length = sequence_length
+        self.feature_count = feature_count
 
         self.encoder = LSTMEncoder(
             hidden_units=hidden_units,
@@ -40,3 +48,18 @@ class LSTMAutoencoder(tf.keras.Model):
         )
 
         return reconstruction
+
+    def get_config(self):
+        config = super().get_config()
+
+        config.update(
+            {
+                "hidden_units": self.hidden_units,
+                "latent_dim": self.latent_dim,
+                "dropout": self.dropout_rate,
+                "sequence_length": self.sequence_length,
+                "feature_count": self.feature_count,
+            }
+        )
+
+        return config
