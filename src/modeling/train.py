@@ -27,7 +27,7 @@ HIDDEN_UNITS = 128
 LATENT_DIM = 32
 DROPOUT = 0.10
 
-BATCH_SIZE = 128
+BATCH_SIZE = 64
 LEARNING_RATE = 0.001
 
 MAX_EPOCHS = 100
@@ -108,7 +108,7 @@ end_time = time.perf_counter()
 elapsed_time = end_time - start_time
 
 # Save model
-MODEL_PATH = MODEL_OUTPUT_DIR / "lstm_autoencoder_exp05.keras"
+MODEL_PATH = MODEL_OUTPUT_DIR / "lstm_autoencoder_exp04.keras"
 
 model.save(MODEL_PATH)
 

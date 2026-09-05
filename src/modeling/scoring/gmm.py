@@ -10,8 +10,10 @@ MODEL_DIR = Path(__file__).resolve().parent.parent
 VALIDATION_DIR = MODEL_DIR / "data" / "validation_results"
 OUTPUT_DIR = MODEL_DIR / "data" / "gmm_results"
 
-VALIDATION_ERRORS_PATH = (
-    VALIDATION_DIR / "validation_reconstruction_errors.npy"
+TRAIN_DIR = MODEL_DIR / "data" / "train_results"
+
+TRAIN_ERRORS_PATH = (
+    TRAIN_DIR / "train_reconstruction_errors.npy"
 )
 
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
@@ -21,17 +23,15 @@ OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 COMPONENT_RANGE = range(2, 6)
 
 
-print("Loading validation reconstruction errors...")
+print("Loading training reconstruction errors...")
 
-validation_errors = np.load(VALIDATION_ERRORS_PATH)
+train_errors = np.load(TRAIN_ERRORS_PATH)
 
-print(f"Validation errors shape: {validation_errors.shape}")
+print(f"Training errors shape: {train_errors.shape}")
 
-# GaussianMixture expects a 2D array:
-# (samples, features)
-X_validation = validation_errors.reshape(-1, 1)
+X_train = train_errors.reshape(-1, 1)
 
-print(f"GMM input shape: {X_validation.shape}")
+print(f"GMM input shape: {X_train.shape}")
 
 
 print("\nFitting candidate GMM configurations...")
@@ -50,11 +50,11 @@ for n_components in COMPONENT_RANGE:
         n_init=10,
     )
 
-    gmm.fit(X_validation)
+    gmm.fit(X_train)
 
-    bic = gmm.bic(X_validation)
-    aic = gmm.aic(X_validation)
-    log_likelihood = gmm.score(X_validation)
+    bic = gmm.bic(X_train)
+    aic = gmm.aic(X_train)
+    log_likelihood = gmm.score(X_train)
 
     results.append(
         {
@@ -110,8 +110,8 @@ print("SELECTED GMM")
 print("=" * 70)
 
 print(f"Selected components (K): {best_components}")
-print(f"BIC:                     {best_gmm.bic(X_validation):.6f}")
-print(f"AIC:                     {best_gmm.aic(X_validation):.6f}")
+print(f"BIC:  {best_gmm.bic(X_train):.6f}")
+print(f"AIC:  {best_gmm.aic(X_train):.6f}")
 print(f"Converged:               {best_gmm.converged_}")
 print(f"Iterations:              {best_gmm.n_iter_}")
 
