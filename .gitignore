@@ -23,3 +23,5 @@ src/modeling/data/test_results/*.npy
 # Generated statistical comparison outputs
 src/baseline/statistical_comparison/*_test_scores.csv
 src/baseline/statistical_comparison/paired_*.csv
+
+src/baseline/data/master_model_comparison.csv
