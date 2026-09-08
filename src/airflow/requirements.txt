@@ -1,0 +1,7 @@
+apache-airflow-providers-postgres
+numpy
+pandas
+pyarrow
+scikit-learn
+joblib
+tensorflow
