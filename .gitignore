@@ -8,3 +8,20 @@ __pycache__/
 # Airflow
 src/airflow/logs/
 src/airflow/.airflow/
+src/airflow/config/airflow.cfg
+
+# Trained model artifacts
+*.joblib
+*.keras
+
+src/modeling/data/sequences/*.npy
+
+src/modeling/data/gmm_results/*.joblib
+src/modeling/data/gmm_results/*.csv
+src/modeling/data/test_results/*.npy
+
+# Generated statistical comparison outputs
+src/baseline/statistical_comparison/*_test_scores.csv
+src/baseline/statistical_comparison/paired_*.csv
+
+src/baseline/data/master_model_comparison.csv
