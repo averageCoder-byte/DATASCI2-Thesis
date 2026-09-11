@@ -16,7 +16,10 @@ MODEL_OUTPUT_DIR = MODEL_DIR / "data" / "models"
 
 MODEL_OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
+# Reproducibility
 
+SEED = 42
+tf.keras.utils.set_random_seed(SEED)
 
 # Configuration
 
@@ -101,7 +104,7 @@ history = model.fit(
     batch_size=BATCH_SIZE,
     callbacks=[early_stopping],
     shuffle=True,
-    verbose=1,
+    verbose=2,
 )
 
 end_time = time.perf_counter()

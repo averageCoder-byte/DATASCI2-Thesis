@@ -24,7 +24,7 @@ with DAG(
     start_date=datetime(2026, 1, 1),
     schedule=None,
     catchup=False,
-    dagrun_timeout=timedelta(hours=6),
+    dagrun_timeout=timedelta(hours=8),
     tags=["lgmma-x", "training", "xauusd"],
 ) as dag:
 
@@ -62,7 +62,7 @@ with DAG(
         bash_command=f"""
             python {MODELING_ROOT}/train.py
         """,
-        execution_timeout=timedelta(hours=4),
+        execution_timeout=timedelta(hours=6),
     )
 
     generate_train_reconstruction = BashOperator(

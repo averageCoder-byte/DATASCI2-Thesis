@@ -119,6 +119,10 @@ services:
 
   airflow-scheduler:
     <<: *airflow-common
+    gpus: all
+    environment:
+      <<: *airflow-common-env
+      LD_LIBRARY_PATH: "/home/airflow/.local/lib/python3.13/site-packages/nvidia/cudnn/lib:/home/airflow/.local/lib/python3.13/site-packages/nvidia/cublas/lib:/home/airflow/.local/lib/python3.13/site-packages/nvidia/cuda_runtime/lib:/home/airflow/.local/lib/python3.13/site-packages/nvidia/cufft/lib:/home/airflow/.local/lib/python3.13/site-packages/nvidia/curand/lib:/home/airflow/.local/lib/python3.13/site-packages/nvidia/cusolver/lib:/home/airflow/.local/lib/python3.13/site-packages/nvidia/cusparse/lib:/home/airflow/.local/lib/python3.13/site-packages/nvidia/nccl/lib:/home/airflow/.local/lib/python3.13/site-packages/nvidia/nvjitlink/lib"
     command: scheduler
     healthcheck:
       test:
