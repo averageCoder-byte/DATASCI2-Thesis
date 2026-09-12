@@ -668,6 +668,7 @@ def main() -> None:
     )
 
     analyze_criterion_overlap(labeled_target)
+    
 
     severity_df = analyze_sequence_severity(
         labeled_target,

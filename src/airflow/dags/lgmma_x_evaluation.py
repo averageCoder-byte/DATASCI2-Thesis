@@ -5,17 +5,80 @@ from airflow import DAG
 from airflow.providers.standard.operators.bash import BashOperator
 
 
+# =============================================================================
+# PATHS
+# =============================================================================
+
 PROJECT_ROOT = Path("/opt/airflow/project")
 SRC_ROOT = PROJECT_ROOT / "src"
+
 MODELING_ROOT = SRC_ROOT / "modeling"
 BASELINE_ROOT = SRC_ROOT / "baseline"
 
+PROCESSED_DATA_PATH = (
+    SRC_ROOT
+    / "pipeline"
+    / "data"
+    / "processed"
+    / "xauusd_5m_processed.parquet"
+)
+
+VALIDATION_METADATA_PATH = (
+    MODELING_ROOT
+    / "data"
+    / "sequence_metadata"
+    / "validation_sequence_metadata.parquet"
+)
+
+TEST_METADATA_PATH = (
+    MODELING_ROOT
+    / "data"
+    / "sequence_metadata"
+    / "test_sequence_metadata.parquet"
+)
+
+VALIDATION_PROXY_LABEL_PATH = (
+    MODELING_ROOT
+    / "data"
+    / "evaluation"
+    / "validation_proxy_labels.csv"
+)
+
+TEST_PROXY_LABEL_PATH = (
+    MODELING_ROOT
+    / "data"
+    / "evaluation"
+    / "test_proxy_labels.csv"
+)
+
+
+# =============================================================================
+# SPLIT TIMESTAMPS (UTC)
+# =============================================================================
+
+TRAIN_START = "2023-11-06 21:35:00+00:00"
+TRAIN_END = "2025-10-28 14:50:00+00:00"
+
+VALIDATION_START = "2025-10-28 14:55:00+00:00"
+VALIDATION_END = "2026-04-01 11:10:00+00:00"
+
+TEST_START = "2026-04-01 11:15:00+00:00"
+TEST_END = "2026-09-02 23:55:00+00:00"
+
+
+# =============================================================================
+# DEFAULT ARGS
+# =============================================================================
 
 default_args = {
     "owner": "datasci2",
     "retries": 0,
 }
 
+
+# =============================================================================
+# DAG
+# =============================================================================
 
 with DAG(
     dag_id="lgmma_x_evaluation",
@@ -32,13 +95,35 @@ with DAG(
     # LGMMA-X evaluation preparation
     # -------------------------------------------------------------------------
 
-    generate_proxy_labels = BashOperator(
-        task_id="generate_proxy_labels",
+    generate_validation_proxy_labels = BashOperator(
+        task_id="generate_validation_proxy_labels",
         bash_command=f"""
-            python {MODELING_ROOT}/evaluation/proxy_labels.py
+            python {MODELING_ROOT}/evaluation/proxy_labels.py \
+                --data "{PROCESSED_DATA_PATH}" \
+                --metadata "{VALIDATION_METADATA_PATH}" \
+                --train-start "{TRAIN_START}" \
+                --train-end "{TRAIN_END}" \
+                --target-start "{VALIDATION_START}" \
+                --target-end "{VALIDATION_END}" \
+                --output "{VALIDATION_PROXY_LABEL_PATH}"
         """,
     )
 
+    generate_test_proxy_labels = BashOperator(
+        task_id="generate_test_proxy_labels",
+        bash_command=f"""
+            python {MODELING_ROOT}/evaluation/proxy_labels.py \
+                --data "{PROCESSED_DATA_PATH}" \
+                --metadata "{TEST_METADATA_PATH}" \
+                --train-start "{TRAIN_START}" \
+                --train-end "{TRAIN_END}" \
+                --target-start "{TEST_START}" \
+                --target-end "{TEST_END}" \
+                --output "{TEST_PROXY_LABEL_PATH}"
+        """,
+    )
+
+    # Validation threshold selection
     select_threshold = BashOperator(
         task_id="select_threshold",
         bash_command=f"""
@@ -46,6 +131,7 @@ with DAG(
         """,
     )
 
+    # Test anomaly scoring
     score_test_data = BashOperator(
         task_id="score_test_data",
         bash_command=f"""
@@ -53,6 +139,7 @@ with DAG(
         """,
     )
 
+    # Final held-out test evaluation
     evaluate_test_threshold = BashOperator(
         task_id="evaluate_test_threshold",
         bash_command=f"""
@@ -60,10 +147,13 @@ with DAG(
         """,
     )
 
+    # Statistical/proxy-score analysis
     compare_proxy_scores = BashOperator(
         task_id="compare_proxy_scores",
         bash_command=f"""
-            python {MODELING_ROOT}/evaluation/compare_proxy_scores.py
+            python {MODELING_ROOT}/evaluation/compare_proxy_scores.py \
+                --scores "{MODELING_ROOT}/data/gmm_results/test_anomaly_scores.csv" \
+                --labels "{TEST_PROXY_LABEL_PATH}"
         """,
     )
 
@@ -151,6 +241,7 @@ with DAG(
             python {BASELINE_ROOT}/statistical_comparison/generate_zscore_test_scores.py
         """,
     )
+
     # -------------------------------------------------------------------------
     # Model comparison summary
     # -------------------------------------------------------------------------
@@ -162,15 +253,47 @@ with DAG(
         """,
     )
 
+    # =========================================================================
+    # DEPENDENCIES
+    # =========================================================================
+
     # -------------------------------------------------------------------------
-    # Dependencies
+    # Validation proxy labels → threshold calibration
     # -------------------------------------------------------------------------
 
-    # Proxy labels are required by threshold selection and baseline
-    # validation-based threshold selection.
-    generate_proxy_labels >> select_threshold
+    generate_validation_proxy_labels >> select_threshold
 
-    generate_proxy_labels >> [
+    # -------------------------------------------------------------------------
+    # Test scoring
+    # -------------------------------------------------------------------------
+
+    # scoring.py uses the frozen GMM and test reconstruction errors
+    # produced by the finalized training pipeline.
+    score_test_data >> evaluate_test_threshold
+
+    # -------------------------------------------------------------------------
+    # Final test evaluation
+    # -------------------------------------------------------------------------
+
+    # Final evaluation requires both:
+    #   1. the test anomaly scores
+    #   2. the threshold selected using validation data
+    select_threshold >> evaluate_test_threshold
+
+    # Test proxy labels are also required by final evaluation.
+    generate_test_proxy_labels >> evaluate_test_threshold
+
+    # -------------------------------------------------------------------------
+    # Proxy-score statistical analysis
+    # -------------------------------------------------------------------------
+
+    evaluate_test_threshold >> compare_proxy_scores
+
+    # -------------------------------------------------------------------------
+    # Baseline models
+    # -------------------------------------------------------------------------
+
+    generate_test_proxy_labels >> [
         isolation_forest,
         one_class_svm,
         zscore,
@@ -179,14 +302,6 @@ with DAG(
         lstm_rank,
     ]
 
-    # LGMMA-X test scoring uses the frozen GMM and test reconstruction errors
-    # produced by the training DAG.
-    score_test_data >> evaluate_test_threshold
-    select_threshold >> evaluate_test_threshold
-
-    # Proxy-score severity analysis requires final test predictions/scores.
-    evaluate_test_threshold >> compare_proxy_scores
-
     # Baseline score-generation tasks depend on their corresponding models.
     isolation_forest >> generate_isolation_forest_scores
     one_class_svm >> generate_one_class_svm_scores
@@ -194,10 +309,13 @@ with DAG(
     lstm_fixed >> generate_lstm_fixed_scores
     lstm_rank >> generate_lstm_rank_scores
 
-    # ARIMA-GARCH does not have a statistical-comparison score-generation
-    # script in the current repository.
+    # ARIMA-GARCH does not currently have a statistical-comparison
+    # score-generation script.
 
-    # Final model summary waits for the LGMMA-X evaluation and all baselines.
+    # -------------------------------------------------------------------------
+    # Final model summary
+    # -------------------------------------------------------------------------
+
     [
         evaluate_test_threshold,
         isolation_forest,

@@ -1381,6 +1381,10 @@ def main():
         selected_threshold,
     )
 
+    test_merged["prediction"] = (
+        test_scores >= selected_threshold
+    ).astype(int)
+
     test_results_df = pd.DataFrame(
         [test_results]
     )

@@ -4,4 +4,5 @@ pandas
 pyarrow
 scikit-learn
 joblib
+arch==8.0.0
 tensorflow[and-cuda]==2.21.0

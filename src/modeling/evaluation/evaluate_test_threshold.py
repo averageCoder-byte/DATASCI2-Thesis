@@ -73,7 +73,7 @@ THRESHOLD_PATH = (
 # EXPECTED DATASET SIZE
 # ============================================================
 
-EXPECTED_TEST_SEQUENCES = 21_858
+EXPECTED_TEST_SEQUENCES = 21_749
 
 
 # ============================================================

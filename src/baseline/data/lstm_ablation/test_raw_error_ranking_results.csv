@@ -1,2 +1,2 @@
-threshold,validation_balanced_accuracy,test_sequences,tn,fp,fn,tp,precision,recall,f1,balanced_accuracy,roc_auc,pr_auc,predicted_anomalous,predicted_anomalous_pct,proxy_anomalous,proxy_anomalous_pct
-0.9288811,0.8811099602200365,21858,3378,250,3911,14319,0.9828402773011188,0.7854635216675809,0.8731363761090277,0.8582775160708357,0.934338117137326,0.9866282427853359,14569,66.652941714704,18230,83.40195809314667
+test_sequences,proxy_anomalous,proxy_anomalous_pct,normal_error_mean,normal_error_median,normal_error_std,normal_error_min,normal_error_max,anomalous_error_mean,anomalous_error_median,anomalous_error_std,anomalous_error_min,anomalous_error_max,roc_auc,pr_auc
+21749,18081,83.13485677502413,0.70452535,0.68685365,0.12309851,0.42890748,1.1581168,1.2799479,1.1569258,0.48782268,0.48490492,3.8828135,0.934136617560732,0.9863126926445788

@@ -58,8 +58,8 @@ TEST_RESULTS_PATH = OUTPUT_DIR / "test_fixed_threshold_results.csv"
 # Constants
 # ============================================================
 
-EXPECTED_VALIDATION_SEQUENCES = 21_812
-EXPECTED_TEST_SEQUENCES = 21_858
+EXPECTED_VALIDATION_SEQUENCES = 21_702
+EXPECTED_TEST_SEQUENCES = 21_749
 
 
 # ============================================================

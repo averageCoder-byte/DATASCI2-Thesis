@@ -68,7 +68,7 @@ print(metadata_df.head())
 
 print("\nValidating sequence metadata...")
 
-expected_sequences = 21_812
+expected_sequences = 21_702
 
 if len(metadata_df) != expected_sequences:
     raise ValueError(
