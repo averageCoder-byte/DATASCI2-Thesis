@@ -8,7 +8,15 @@ df = read_data()
 
 def transform_data(df):
 
-    df["log_return"] = np.log(df["Close"] / df["Close"].shift(1))
+    # GAP-AWARE SEGMENTATION
+
+    gap = df["Date"].diff() > pd.Timedelta(minutes=5)
+    df["segment_id"] = gap.cumsum()
+
+    df["log_return"] = (
+        df.groupby("segment_id")["Close"]
+        .transform(lambda x: np.log(x / x.shift(1)))
+    )
     df["range_pct"] = (df["High"]-df["Low"])/df["Close"]
     df["body_pct"] = abs(df["Close"]-df["Open"])/df["Close"]
     df["upper_wick_pct"] = (
@@ -18,11 +26,6 @@ def transform_data(df):
     df["lower_wick_pct"] = (
         df[["Open", "Close"]].min(axis=1) - df["Low"]
     ) / df["Close"]
-
-    # GAP-AWARE SEGMENTATION
-
-    gap = df["Date"].diff() > pd.Timedelta(minutes=5)
-    df["segment_id"] = gap.cumsum()
 
     # ROLLING FEATURES
 
